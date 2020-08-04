@@ -56,7 +56,7 @@ def training(model, train_loader, test_loader, n_epochs, criterion, optimizer, s
     hist = {
         'train_loss': train_loss_list,
         'train_acc': train_acc_list,
-        'test_acc': test_loss_list,
+        'test_loss': test_loss_list,
         'test_acc': test_acc_list,
     }
 
