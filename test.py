@@ -70,9 +70,9 @@ print('Device: {}'.format(device))
 pamap2 = PAMAP2('D:/datasets/PAMAP2/PAMAP2_Dataset/Protocol/', cache_dir='data_cache/org/')
 
 model_list = {
-    'transformer': Transformer(d_model=d_model, max_seq_len=frame_size, output_dim=n_classes, n_blocks=6, n_heads=1).to(device),
-    'resnet34': resnet34(in_channels=d_model, num_classes=n_classes).to(device),
-    'vgg11': vgg11(in_channels=d_model, num_classes=n_classes).to(device)
+    'transformer': Transformer,
+    'resnet34': resnet34,
+    'vgg11': vgg11,
 }
 
 param_list = {
@@ -91,7 +91,10 @@ for test_person in all_persons:
 
     for model_name in model_list:
         print('[{}]'.format(model_name))
-        model = model_list[model_name]
+        if 'transformer' in model_name:
+            model = model_list[model_name](d_model=d_model, max_seq_len=frame_size, output_dim=n_classes, n_blocks=6, n_heads=3).to(device)
+        else:
+            model = model_list[model_name](in_channels=d_model, num_classes=n_classes).to(device)
         param = param_list[model_name]
 
         if 'transformer' in model_name: flg = False 
