@@ -77,8 +77,8 @@ model_list = {
 
 param_list = {
     'transformer': {'lr': 1e-2, 'scheduler': None},
-    'resnet34': {'lr': 1e-4, 'scheduler': None},
-    'vgg11': {'lr': 1e-6, 'scheduler': None}
+    'resnet34': {'lr': 1e-5, 'scheduler': None},
+    'vgg11': {'lr': 1e-5, 'scheduler': None}
 }
 
 for test_person in all_persons:
