@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from utils.train import training
+from utils.losses import ComplementEntroyLoss
 from pamap2.utils import PAMAP2
 from models.transformer import Transformer
 from models.resnet import resnet34
@@ -59,9 +60,8 @@ all_persons = np.array([
 d_model = len(positions) * len(axes)
 n_classes = len(activities)
 
-n_epochs = 200
+n_epochs = 300
 batch_size = 256
-lr = 1e-2
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Device: {}'.format(device))
@@ -77,8 +77,8 @@ model_list = {
 
 param_list = {
     'transformer': {'lr': 1e-2, 'scheduler': None},
-    'resnet34': {'lr': 1e-5, 'scheduler': None},
-    'vgg11': {'lr': 1e-5, 'scheduler': None}
+    'resnet34': {'lr': 1e-4, 'scheduler': None},
+    'vgg11': {'lr': 1e-6, 'scheduler': None}
 }
 
 for test_person in all_persons:
@@ -102,12 +102,23 @@ for test_person in all_persons:
         train_loader, test_loader = get_dataset(train_persons, test_persons, fast_channel=flg)
 
         # Training
+        # Adam と schedulerの相性が悪いなぜ？
+    
+        # Loss
         criterion = nn.CrossEntropyLoss(reduction='mean')
+        # criterion = ComplementEntroyLoss()
+
+        # Optimizer
         optimizer = torch.optim.Adam(model.parameters(), lr=param['lr'])
-        # optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-        #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
-        #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=n_epochs, eta_min=1e-5)
-        # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.9, last_epoch=-1)
+        # optimizer = torch.optim.SGD(model.parameters(), lr=param['lr'], momentum=0.9)
+        # optimizer = torch.optim.Adagrad(model.parameters(), lr=param['lr'])
+        # optimizer = torch.optim.RMSprop(model.parameters(), lr=param['lr'])
+
+        # Optimizer scheduling
+        # scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
+        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10, eta_min=1e-6)
+        # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.5, last_epoch=-1)
+        # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[2, 4, 8, 16], gamma=0.1, last_epoch=-1)
         scheduler = None
 
         hist = training(model, train_loader, test_loader, n_epochs, criterion, optimizer, scheduler, device=device)
