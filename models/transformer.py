@@ -17,7 +17,7 @@ class Transformer(nn.Module):
         # tenc = TransformerEncoderLayer(d_model, n_blocks, dim_feedforward=1024, dropout=0.1, activation='relu')
         # self.tencs = TransformerEncoder(tenc, num_layers=6)
 
-        self.classifier = ClassificationHead(output_dim=output_dim, d_model=d_model)
+        self.classifier = ClassificationHead(output_dim=output_dim, max_seq_len=max_seq_len, d_model=d_model)
     
     def forward(self, x, mask=None):
         x1 = self.pe(x)
@@ -123,16 +123,18 @@ class TransformerBlock(nn.Module):
         return output#, normalized_weights
 
 class ClassificationHead(nn.Module):
-    def __init__(self, d_model, output_dim):
+    def __init__(self, d_model, max_seq_len, output_dim):
         super(ClassificationHead, self).__init__()
 
-        self.linear = nn.Linear(d_model, output_dim)
+        self.linear = nn.Linear(max_seq_len*d_model, output_dim)
+        #self.linear = nn.Linear(d_model, output_dim)
 
         nn.init.normal_(self.linear.weight, std=0.02)
         nn.init.normal_(self.linear.bias, std=0.1)
     
     def forward(self, x):
         # x0 = x[:, 0, :]
-        x0 = torch.sum(x, dim=1)
+        # x0 = torch.sum(x, dim=1)
+        x0 = x.view(x.size(0), -1)
         out = self.linear(x0)
         return out
